@@ -1,7 +1,13 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 LIMIT_FOR_ALLERT = 0.85
 """Верхний предел ожидания ответа от сервера."""
 
-CLIENT_IDS = (261360849, -4956155742)
+CLIENT_IDS = (os.getenv('MY_ID'), os.getenv('GROUP_ID'))
 """Кортеж доступных id."""
 
 STATUS_CODES = {

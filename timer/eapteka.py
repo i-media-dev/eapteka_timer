@@ -61,10 +61,10 @@ async def measure_real_page_load_time(url: str, output_file: str):
 
 
 def main():
-    url = "https://www.eapteka.ru/"
-    # url = 'https://www.eapteka.ru/personal/cart/'
+    url_main = "https://www.eapteka.ru/"
+    url_cart = 'https://www.eapteka.ru/personal/cart/'
     output_file = "eapteka.html"
-    asyncio.run(measure_real_page_load_time(url, output_file))
+    asyncio.run(measure_real_page_load_time(url_main, output_file))
 
 
 if __name__ == "__main__":
