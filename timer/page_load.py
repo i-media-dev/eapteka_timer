@@ -1,17 +1,28 @@
 import logging
 import time
 from pathlib import Path
+from datetime import datetime as dt
 
 from playwright.async_api import async_playwright
 
 from timer.logging_config import setup_logging
-from timer.constants import JS_CODE
+from timer.constants import (JS_CODE, TABLE_NAME, CREATE_REPORTS_MODEL,
+                             INSERT_REPORT, DATE_FORMAT, TIME_FORMAT,
+                             ADDRESS)
+from timer.decorators import connection_db
 
 setup_logging()
 
 
-async def measure_main_page_load_time(url: str, output_file: str):
+@connection_db
+async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
     async with async_playwright() as p:
+        cursor.execute('SHOW TABLES')
+        tables_list = [table[0] for table in cursor.fetchall()]
+
+        date_str = dt.now().strftime(DATE_FORMAT)
+        time_str = dt.now().strftime(TIME_FORMAT)
+
         browser = await p.chromium.launch(
             headless=True,
             args=[
@@ -87,5 +98,28 @@ async def measure_main_page_load_time(url: str, output_file: str):
         png_file_path = files_path / png_file
         await page.screenshot(path=png_file_path, full_page=True)
         logging.info('Скриншот сохранён → %s', png_file_path)
+
+        if TABLE_NAME in tables_list:
+            logging.info('Таблица %s найдена в базе', TABLE_NAME)
+        else:
+            create_table_query = CREATE_REPORTS_MODEL.format(
+                table_name=TABLE_NAME
+            )
+            cursor.execute(create_table_query)
+            logging.info('Таблица %s успешно создана', TABLE_NAME)
+
+        page_name = output_file.split('_')[1]
+
+        query = INSERT_REPORT.format(table_name=TABLE_NAME)
+        params = [(
+            date_str,
+            time_str,
+            url,
+            page_name,
+            total_time,
+            f'{ADDRESS}{output_file}'
+        )]
+        cursor.executemany(query, params)
+        logging.info('Данные сохранены')
 
         await browser.close()

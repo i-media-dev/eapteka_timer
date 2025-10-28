@@ -4,6 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+ADDRESS = 'https://feeds.i-media.ru/scripts/eapteka_timer/media/'
+"""Путь к файлу на ftp."""
+
+TABLE_NAME = 'loading_reports'
+
 TIME_DELAY = 5
 """Время повторного реконнекта к дб в секундах."""
 
@@ -18,27 +24,15 @@ TIME_FORMAT = '%H:%M:%S'
 
 PHARMACIES = {
     'eapteka': (
-        'https://www.eapteka.ru/',
+        'https://www.eapteka.ru/goods/drugs/',
         'https://www.eapteka.ru/personal/cart/',
     ),
     'aptekaru': (
-        'https://apteka.ru/',
+        'https://apteka.ru/category/medicines/',
         'https://apteka.ru/cart/',
     ),
-    'stolichki': (
-        'https://stolichki.ru/',
-        'https://stolichki.ru/basket'
-    ),
-    'planetazdorovo': (
-        'https://planetazdorovo.ru/',
-        'https://planetazdorovo.ru/cart/',
-    ),
-    'zdorovru': (
-        'https://zdorov.ru/',
-        'https://zdorov.ru/order/basket',
-    ),
     'gorzdrav': (
-        'https://new.gorzdrav.org/',
+        'https://new.gorzdrav.org/category/lekarstva/',
         'https://new.gorzdrav.org/checkout/mixed/reservation/',
     )
 }
@@ -48,16 +42,20 @@ JS_CODE = """
 () => {
     const images = Array.from(document.images);
     if (images.length === 0) return true;
-    
-    const loadedImages = images.filter(img => {
-        return img.complete && 
-                img.naturalWidth > 0 && 
-                img.naturalHeight > 0 &&
-                !img.src.startsWith('data:') &&
-                img.src !== '';
+
+    const networkImages = images.filter(img => {
+        return true; // Пока берем все
     });
 
-    return loadedImages.length >= images.length * 0.9;
+    if (networkImages.length === 0) return true;
+
+    const loadedImages = networkImages.filter(img => {
+        return img.complete &&
+               img.naturalWidth > 0 &&
+               img.naturalHeight > 0;
+    });
+
+    return loadedImages.length >= Math.max(1, networkImages.length * 0.5);
 }
 """
 """JS код проверки загруженныйх изображений."""
@@ -97,4 +95,29 @@ STATUS_CODES = {
 }
 """Словарь кодов ответов от сервера и их значения."""
 
-TEST_CODE_RESPONSE = 403
+CREATE_REPORTS_MODEL = '''
+CREATE TABLE IF NOT EXISTS {table_name} (
+    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `date` DATE NOT NULL,
+    `time` TIME NOT NULL,
+    `website` VARCHAR(255) NOT NULL,
+    `page_name` VARCHAR(255) NOT NULL,
+    `loading_time` DECIMAL(10,2) UNSIGNED NOT NULL,
+    `screenshot` VARCHAR(500) NOT NULL,
+    UNIQUE KEY `unique_{table_name}_combo` (`date`, `time`, `website`)
+);
+'''
+"""Запрос на создание таблицы бд."""
+
+INSERT_REPORT = '''
+INSERT INTO {table_name} (
+    date,
+    time,
+    website,
+    page_name,
+    loading_time,
+    screenshot
+)
+VALUES (%s, %s, %s, %s, %s, %s)
+ON DUPLICATE KEY UPDATE id = id
+'''
