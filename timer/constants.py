@@ -4,6 +4,60 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+TIME_DELAY = 5
+"""Время повторного реконнекта к дб в секундах."""
+
+MAX_RETRIES = 5
+"""Максимальное количество переподключений к бд."""
+
+DATE_FORMAT = '%Y-%m-%d'
+"""Формат даты по умолчанию."""
+
+TIME_FORMAT = '%H:%M:%S'
+"""Формат времени по умолчанию."""
+
+PHARMACIES = {
+    'eapteka': (
+        'https://www.eapteka.ru/',
+        'https://www.eapteka.ru/personal/cart/',
+    ),
+    'aptekaru': (
+        'https://apteka.ru/',
+        'https://apteka.ru/cart/',
+    ),
+    'stolichki': (
+        'https://stolichki.ru/',
+        'https://stolichki.ru/basket'
+    ),
+    'planetazdorovo': (
+        'https://planetazdorovo.ru/',
+        'https://planetazdorovo.ru/cart/',
+    ),
+    'zdorovru': (
+        'https://zdorov.ru/',
+        'https://zdorov.ru/order/basket',
+    ),
+    'gorzdrav': (
+        'https://new.gorzdrav.org/',
+        'https://new.gorzdrav.org/checkout/mixed/reservation/',
+    )
+}
+"""Словарь всех сайтов с urls главной страницы и корзины."""
+
+JS_CODE = """
+    () => {
+        const images = Array.from(document.images);
+        if (images.length === 0) return true;
+
+        const loadedCount = images.filter(img =>
+            img.complete && img.naturalWidth > 0
+        ).length;
+
+        return loadedCount >= images.length * 0.7;
+    }
+"""
+"""JS код проверки загруженныйх изображений."""
+
 LIMIT_FOR_ALLERT = 0.85
 """Верхний предел ожидания ответа от сервера."""
 
