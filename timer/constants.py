@@ -45,16 +45,20 @@ PHARMACIES = {
 """Словарь всех сайтов с urls главной страницы и корзины."""
 
 JS_CODE = """
-    () => {
-        const images = Array.from(document.images);
-        if (images.length === 0) return true;
+() => {
+    const images = Array.from(document.images);
+    if (images.length === 0) return true;
+    
+    const loadedImages = images.filter(img => {
+        return img.complete && 
+                img.naturalWidth > 0 && 
+                img.naturalHeight > 0 &&
+                !img.src.startsWith('data:') &&
+                img.src !== '';
+    });
 
-        const loadedCount = images.filter(img =>
-            img.complete && img.naturalWidth > 0
-        ).length;
-
-        return loadedCount >= images.length * 0.7;
-    }
+    return loadedImages.length >= images.length * 0.9;
+}
 """
 """JS код проверки загруженныйх изображений."""
 

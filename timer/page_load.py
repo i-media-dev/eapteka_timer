@@ -45,27 +45,25 @@ async def measure_main_page_load_time(url: str, output_file: str):
             await page.goto(url, wait_until='load', timeout=60000)
             load_time = time.perf_counter() - start_total
             logging.info('Основная загрузка (load): %s с', round(load_time, 2))
+            images_start = time.perf_counter()
+
+            try:
+                await page.wait_for_function(JS_CODE, timeout=10000)
+                images_time = time.perf_counter() - images_start
+                logging.info(
+                    'Все изображения загружены: %s с',
+                    round(images_time, 2)
+                )
+            except Exception as error:
+                images_time = time.perf_counter() - images_start
+                logging.warning(
+                    'Не все изображения загрузились за %s с: %s',
+                    round(images_time, 2),
+                    error
+                )
         except Exception as error:
             logging.error(
                 'Страница не смогла загрузится за отведенное время: %s',
-                error
-            )
-
-        images_start = time.perf_counter()
-        try:
-            await page.wait_for_function(JS_CODE, timeout=15000)
-
-            images_time = time.perf_counter() - images_start
-            logging.info(
-                'Все изображения загружены: %s с',
-                round(images_time, 2)
-            )
-
-        except Exception as error:
-            images_time = time.perf_counter() - images_start
-            logging.error(
-                'Не все изображения загрузились за %s с: %s',
-                round(images_time, 2),
                 error
             )
 
