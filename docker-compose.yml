@@ -1,5 +1,6 @@
 services:
   eapteka_timer:
+    network_mode: "host"
     environment:
       - TZ=Europe/Moscow
     image: imediadev/eapteka_timer
