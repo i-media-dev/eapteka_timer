@@ -24,15 +24,15 @@ TIME_FORMAT = '%H:%M:%S'
 
 PHARMACIES = {
     'eapteka': (
-        'https://www.eapteka.ru/goods/drugs/',
+        'https://www.eapteka.ru/',
         'https://www.eapteka.ru/personal/cart/',
     ),
     'aptekaru': (
-        'https://apteka.ru/category/medicines/',
+        'https://apteka.ru/',
         'https://apteka.ru/cart/',
     ),
     'gorzdrav': (
-        'https://new.gorzdrav.org/category/lekarstva/',
+        'https://new.gorzdrav.org/',
         'https://new.gorzdrav.org/checkout/mixed/reservation/',
     )
 }
