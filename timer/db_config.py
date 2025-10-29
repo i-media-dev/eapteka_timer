@@ -27,6 +27,7 @@ config = {
     'password': os.getenv('DB_PASSWORD_EAPTEKA'),
     'host': os.getenv('DB_HOST_EAPTEKA'),
     'database': os.getenv('DB_NAME_EAPTEKA'),
+    'port': os.getenv('DB_PORT_EAPTEKA', 3306),
     'connection_timeout': 10,
     'read_timeout': 60,
     'use_pure': True
