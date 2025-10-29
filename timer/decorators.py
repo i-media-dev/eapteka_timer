@@ -102,7 +102,7 @@ def connection_db(func):
         callable: Обёрнутая функция с добавленной функциональностью
         подключения к базе данных и логирования.
     """
-    def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs):
         connection = None
         cursor = None
         delay = TIME_DELAY
