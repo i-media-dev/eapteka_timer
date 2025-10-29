@@ -15,14 +15,14 @@ setup_logging()
 def time_of_script(func):
     """Декортаор для измерения времени работы всего приложения."""
     @functools.wraps(func)
-    def wrapper():
+    async def wrapper():
         date_str = dt.now().strftime(DATE_FORMAT)
         time_str = dt.now().strftime(TIME_FORMAT)
         run_id = str(int(time.time()))
         print(f'Функция main начала работу {date_str} в {time_str}')
         start_time = time.time()
         try:
-            result = func()
+            result = await func()
             execution_time = round(time.time() - start_time, 3)
             print(
                 'Функция main завершила '
@@ -113,7 +113,7 @@ def connection_db(func):
                 connection = mysql.connector.connect(**config)
                 cursor = connection.cursor()
                 kwargs['cursor'] = cursor
-                result = func(*args, **kwargs)
+                result = await func(*args, **kwargs)
                 connection.commit()
                 return result
             except (
