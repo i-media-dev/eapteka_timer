@@ -116,7 +116,7 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
             url,
             page_name,
             total_time,
-            f'{ADDRESS}{output_file}'
+            f'{ADDRESS}{output_file.split('_')[0]}/{output_file}.png'
         )]
         cursor.executemany(query, params)
         logging.info('Данные сохранены')
