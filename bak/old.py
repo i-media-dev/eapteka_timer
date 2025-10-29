@@ -3,16 +3,12 @@ import os
 import time
 import uuid
 
-from dotenv import load_dotenv
 import requests
+from dotenv import load_dotenv
 from telebot import TeleBot
 
-from timer.constants import (
-    CLIENT_IDS,
-    LIMIT_FOR_ALLERT,
-    STATUS_CODES,
-    TEST_CODE_RESPONSE
-)
+from timer.constants import (CLIENT_IDS, LIMIT_FOR_ALLERT, STATUS_CODES,
+                             TEST_CODE_RESPONSE)
 from timer.logging_config import setup_logging
 
 load_dotenv()

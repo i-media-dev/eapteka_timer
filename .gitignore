@@ -12,6 +12,7 @@
 *.xml
 *.tmp
 *.html
+!robot/*.png
 env/
 __pycache__/
 .env

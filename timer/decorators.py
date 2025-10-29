@@ -5,7 +5,7 @@ from datetime import datetime as dt
 
 import mysql.connector
 
-from timer.constants import DATE_FORMAT, TIME_FORMAT, TIME_DELAY, MAX_RETRIES
+from timer.constants import DATE_FORMAT, MAX_RETRIES, TIME_DELAY, TIME_FORMAT
 from timer.db_config import config
 from timer.logging_config import setup_logging
 

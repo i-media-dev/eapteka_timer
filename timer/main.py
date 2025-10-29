@@ -1,8 +1,8 @@
 import asyncio
 
-from timer.page_load import measure_main_page_load_time
 from timer.constants import PHARMACIES
 from timer.decorators import time_of_script
+from timer.page_load import measure_main_page_load_time
 
 
 @time_of_script

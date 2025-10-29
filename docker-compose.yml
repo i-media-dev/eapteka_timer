@@ -1,0 +1,11 @@
+services:
+  eapteka_timer:
+    environment:
+      - TZ=Europe/Moscow
+    image: imediadev/eapteka_timer
+    user: "1002:1002"
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+      - /home/main_ftp_user/scripts/eapteka_timer/media:/app/media
+

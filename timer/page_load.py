@@ -1,15 +1,14 @@
 import logging
 import time
-from pathlib import Path
 from datetime import datetime as dt
+from pathlib import Path
 
 from playwright.async_api import async_playwright
 
-from timer.logging_config import setup_logging
-from timer.constants import (JS_CODE, TABLE_NAME, CREATE_REPORTS_MODEL,
-                             INSERT_REPORT, DATE_FORMAT, TIME_FORMAT,
-                             ADDRESS)
+from timer.constants import (ADDRESS, CREATE_REPORTS_MODEL, DATE_FORMAT,
+                             INSERT_REPORT, JS_CODE, TABLE_NAME, TIME_FORMAT)
 from timer.decorators import connection_db
+from timer.logging_config import setup_logging
 
 setup_logging()
 
