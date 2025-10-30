@@ -53,11 +53,19 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
         logging.info('Начало загрузки страницы %s', output_file)
 
         while attempt < REPEAT:
-            await context.clear_cookies()
-            await context.clear_cache()
-            start_total = time.perf_counter()
+
+            await context.close()
+            context = await browser.new_context(
+                user_agent=user_agent,
+                viewport={'width': 1920, 'height': 1080},
+                java_script_enabled=True,
+            )
+            await context.set_extra_http_headers(headers)
+            page = await context.new_page()
+
             attempt += 1
             try:
+                start_total = time.perf_counter()
                 await page.goto(url, wait_until='load', timeout=TIMEOUT_PAGE)
                 load_time = round(time.perf_counter() - start_total, 2)
                 logging.info('Загрузка  завершена: %s с', round(load_time, 2))
