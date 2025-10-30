@@ -6,16 +6,19 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 from timer.constants import (ADDRESS, CREATE_REPORTS_MODEL, DATE_FORMAT,
-                             INSERT_REPORT, JS_CODE, TABLE_NAME, TIME_FORMAT)
+                             INSERT_REPORT, REDUCTION, REPEAT, TABLE_NAME,
+                             TIME_FORMAT, TIMEOUT_PAGE, TIMEOUT_SCREENSHOT)
 from timer.decorators import connection_db
 from timer.logging_config import setup_logging
 
 setup_logging()
 
 
-@connection_db
+# @connection_db
 async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
     async with async_playwright() as p:
+        attempt = 0
+        repeat_times_list = []
         cursor.execute('SHOW TABLES')
         tables_list = [table[0] for table in cursor.fetchall()]
 
@@ -49,39 +52,40 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
         page = await context.new_page()
         logging.info('Начало загрузки страницы %s', output_file)
 
-        start_total = time.perf_counter()
-
-        try:
-            await page.goto(url, wait_until='load', timeout=60000)
-            load_time = time.perf_counter() - start_total
-            logging.info('Основная загрузка (load): %s с', round(load_time, 2))
-            images_start = time.perf_counter()
-
+        while attempt < REPEAT:
+            await context.clear_cookies()
+            await context.clear_cache()
+            start_total = time.perf_counter()
+            attempt += 1
             try:
-                await page.wait_for_function(JS_CODE, timeout=10000)
-                images_time = time.perf_counter() - images_start
-                logging.info(
-                    'Все изображения загружены: %s с',
-                    round(images_time, 2)
-                )
+                await page.goto(url, wait_until='load', timeout=TIMEOUT_PAGE)
+                load_time = round(time.perf_counter() - start_total, 2)
+                logging.info('Загрузка  завершена: %s с', round(load_time, 2))
+
             except Exception as error:
-                images_time = time.perf_counter() - images_start
-                logging.warning(
-                    'Не все изображения загрузились за %s с: %s',
-                    round(images_time, 2),
+                logging.error(
+                    'Страница %s не загрузилась за %s секунд: %s',
+                    output_file,
+                    TIMEOUT_PAGE / REDUCTION,
                     error
                 )
-        except Exception as error:
-            logging.error(
-                'Страница не смогла загрузится за отведенное время: %s',
-                error
-            )
+                load_time = round(time.perf_counter() - start_total, 2)
 
-        total_time = time.perf_counter() - start_total
+            logging.info(
+                '\nПопытка %s/%s'
+                '\nОБЩЕЕ ВРЕМЯ ЗАГРУЗКИ %s: %s с',
+                attempt,
+                REPEAT,
+                output_file,
+                load_time
+            )
+            repeat_times_list.append(load_time)
+        avg_time = round(sum(repeat_times_list) / len(repeat_times_list), 2)
         logging.info(
-            'ОБЩЕЕ ВРЕМЯ ЗАГРУЗКИ %s: %s с',
+            '\nСреднее время загрузки страницы %s за %s попыток - %s',
             output_file,
-            round(total_time, 2)
+            REPEAT,
+            avg_time
         )
 
         html = await page.content()
@@ -95,6 +99,7 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
 
         png_file = f'{output_file}.png'
         png_file_path = files_path / png_file
+        await page.wait_for_timeout(TIMEOUT_SCREENSHOT)
         await page.screenshot(path=png_file_path, full_page=True)
         logging.info('Скриншот сохранён → %s', png_file_path)
 
@@ -115,7 +120,7 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
             time_str,
             url,
             page_name,
-            total_time,
+            avg_time,
             f'{ADDRESS}{output_file.split('_')[0]}/{output_file}.png'
         )]
         cursor.executemany(query, params)

@@ -4,6 +4,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+REDUCTION = 1000
+"""Константа для перевода в секунды."""
+
+REPEAT = 3
+"""Количество загрузок страницы."""
+
+TIMEOUT_SCREENSHOT = 1000
+"""Задержка перед скрином."""
+
+TIMEOUT_PAGE = 60000
+"""Таймаут запроса к странице."""
 
 ADDRESS = 'https://feeds.i-media.ru/scripts/eapteka_timer/media/'
 """Путь к файлу на ftp."""
@@ -31,34 +42,16 @@ PHARMACIES = {
         'https://apteka.ru/',
         'https://apteka.ru/cart/',
     ),
+    'stolichki': (
+        'https://stolichki.ru/',
+        'https://stolichki.ru/basket'
+    ),
     'gorzdrav': (
         'https://new.gorzdrav.org/',
         'https://new.gorzdrav.org/checkout/mixed/reservation/',
     )
 }
 """Словарь всех сайтов с urls главной страницы и корзины."""
-
-JS_CODE = """
-() => {
-    const images = Array.from(document.images);
-    if (images.length === 0) return true;
-
-    const networkImages = images.filter(img => {
-        return true; // Пока берем все
-    });
-
-    if (networkImages.length === 0) return true;
-
-    const loadedImages = networkImages.filter(img => {
-        return img.complete &&
-               img.naturalWidth > 0 &&
-               img.naturalHeight > 0;
-    });
-
-    return loadedImages.length >= Math.max(1, networkImages.length * 0.5);
-}
-"""
-"""JS код проверки загруженныйх изображений."""
 
 LIMIT_FOR_ALLERT = 0.85
 """Верхний предел ожидания ответа от сервера."""
