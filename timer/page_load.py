@@ -14,7 +14,7 @@ from timer.logging_config import setup_logging
 setup_logging()
 
 
-# @connection_db
+@connection_db
 async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
     async with async_playwright() as p:
         attempt = 0
