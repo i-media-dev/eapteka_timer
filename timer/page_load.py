@@ -167,7 +167,8 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
             f.write(html)
         logging.info('HTML сохранён → %s', html_file_path)
 
-        png_file = f'{output_file}.png'
+        hour_str = time_str.split(':')[0]
+        png_file = f'{output_file}_{date_str}_{hour_str}.png'
         png_file_path = files_path / png_file
         await page.wait_for_timeout(TIMEOUT_SCREENSHOT)
         await page.screenshot(path=png_file_path, full_page=True)
