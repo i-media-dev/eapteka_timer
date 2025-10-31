@@ -95,8 +95,17 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
             REPEAT,
             avg_time
         )
+        try:
+            html = await page.content()
+        except Exception as error:
+            logging.warning(
+                'Редкая ошибка JS-скрипт начал какую-то '
+                'навигацию не в тайминг: %s',
+                error
+            )
+            await page.wait_for_timeout(TIMEOUT_SCREENSHOT)
+            html = await page.content()
 
-        html = await page.content()
         files_path = Path('media') / Path(output_file.split('_')[0])
         html_file = f'{output_file}.html'
         html_file_path = files_path / html_file
