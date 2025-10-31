@@ -1,17 +1,55 @@
 import logging
+import os
 import time
 from datetime import datetime as dt
 from pathlib import Path
 
 from playwright.async_api import async_playwright
+from telebot import TeleBot
 
-from timer.constants import (ADDRESS, CREATE_REPORTS_MODEL, DATE_FORMAT,
-                             INSERT_REPORT, REDUCTION, REPEAT, TABLE_NAME,
+from timer.constants import (ADDRESS, CLIENT_IDS, CREATE_REPORTS_MODEL,
+                             DATE_FORMAT, INSERT_REPORT, LIMIT_FOR_ALLERT,
+                             REDUCTION, REPEAT, STATUS_CODES, TABLE_NAME,
                              TIME_FORMAT, TIMEOUT_PAGE, TIMEOUT_SCREENSHOT)
 from timer.decorators import connection_db
 from timer.logging_config import setup_logging
 
 setup_logging()
+
+eapteka_bot = TeleBot(os.getenv('EAPTEKA_TOKEN_TELEGRAM'))
+
+
+def send_bot_message(status_code: int, load_time: float, page: str) -> None:
+    rus_page = 'главная' if page == 'main' else 'корзина'
+    if status_code == 200:
+        if load_time > LIMIT_FOR_ALLERT:
+            try:
+                for id in CLIENT_IDS:
+                    with open('robot/cry-robot.png', 'rb') as photo:
+                        eapteka_bot.send_sticker(id, photo)
+                    eapteka_bot.send_message(
+                        chat_id=id,
+                        text='Время ожидания ответа от сервера при загрузке '
+                        f'страницы - {rus_page} превысило критический '
+                        f'максимум -  {load_time} сек!')
+                    logging.info(f'Сообщение отправлено пользователю {id}')
+            except Exception as e:
+                logging.error(f'Пользователь {id} недоступен: {e}')
+    else:
+        try:
+            for id in CLIENT_IDS:
+                with open('robot/alert-robot.png', 'rb') as photo:
+                    eapteka_bot.send_sticker(id, photo)
+                eapteka_bot.send_message(
+                    chat_id=id,
+                    text=f'При запросе на страницу - {rus_page} сервер '
+                    f'вернул код ответа: {status_code}. '
+                    'Это значит: '
+                    f'{STATUS_CODES.get(status_code, "Неизвестно")}'
+                )
+                logging.info(f'Сообщение отправлено пользователю {id}')
+        except Exception as e:
+            logging.error(f'Пользователь {id} недоступен: {e}')
 
 
 @connection_db
@@ -66,7 +104,11 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
             attempt += 1
             try:
                 start_total = time.perf_counter()
-                await page.goto(url, wait_until='load', timeout=TIMEOUT_PAGE)
+                response = await page.goto(
+                    url,
+                    wait_until='load',
+                    timeout=TIMEOUT_PAGE
+                )
                 load_time = round(time.perf_counter() - start_total, 2)
                 logging.info('Загрузка  завершена: %s с', round(load_time, 2))
 
@@ -119,6 +161,9 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
         await page.wait_for_timeout(TIMEOUT_SCREENSHOT)
         await page.screenshot(path=png_file_path, full_page=True)
         logging.info('Скриншот сохранён → %s', png_file_path)
+
+        status_code = response.status if response else 0
+        send_bot_message(status_code, avg_time)
 
         if TABLE_NAME in tables_list:
             logging.info('Таблица %s найдена в базе', TABLE_NAME)

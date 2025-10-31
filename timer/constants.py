@@ -53,7 +53,7 @@ PHARMACIES = {
 }
 """Словарь всех сайтов с urls главной страницы и корзины."""
 
-LIMIT_FOR_ALLERT = 0.85
+LIMIT_FOR_ALLERT = 2.0
 """Верхний предел ожидания ответа от сервера."""
 
 CLIENT_IDS = (os.getenv('GROUP_ID'),)
