@@ -4,6 +4,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+CRY_ROBOT = 'robot/cry-robot.png'
+"""Стикер плачущего робота."""
+
+WAIT_ROBOT = 'robot/wait-robot.png'
+"""Стикер ждущего робота"""
+
+ALERT_ROBOT = 'robot/alert-robot.png'
+"""Стикер робота для общих уведомлений."""
+
 REDUCTION = 1000
 """Константа для перевода в секунды."""
 
