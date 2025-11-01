@@ -8,10 +8,10 @@ from playwright.async_api import async_playwright
 from telebot import TeleBot
 
 from timer.constants import (ADDRESS, ALERT_ROBOT, CLIENT_IDS,
-                             CREATE_REPORTS_MODEL, CRY_ROBOT, DATE_FORMAT,
-                             INSERT_REPORT, LIMIT_FOR_ALLERT, REDUCTION,
-                             REPEAT, STATUS_CODES, TABLE_NAME, TIME_FORMAT,
-                             TIMEOUT_PAGE, TIMEOUT_SCREENSHOT, WAIT_ROBOT)
+                             CREATE_REPORTS_MODEL, DATE_FORMAT, INSERT_REPORT,
+                             LIMIT_FOR_ALLERT, REDUCTION, REPEAT, STATUS_CODES,
+                             TABLE_NAME, TIME_FORMAT, TIMEOUT_PAGE,
+                             TIMEOUT_SCREENSHOT)
 from timer.decorators import connection_db
 from timer.logging_config import setup_logging
 
@@ -24,18 +24,17 @@ def send_bot_message(
     url: str,
     status_code: int,
     load_time: float,
-    page: str,
     screenshot: str
 ) -> None:
 
-    robot = CRY_ROBOT if page == 'main' else WAIT_ROBOT
+    # robot = CRY_ROBOT if page == 'main' else WAIT_ROBOT
 
     if status_code == 200:
         if load_time > LIMIT_FOR_ALLERT:
             try:
                 for id in CLIENT_IDS:
-                    with open(robot, 'rb') as photo:
-                        eapteka_bot.send_sticker(id, photo)
+                    # with open(robot, 'rb') as photo:
+                    #     eapteka_bot.send_sticker(id, photo)
                     eapteka_bot.send_message(
                         chat_id=id,
                         text='Время ожидания ответа от сервера при загрузке '
@@ -178,7 +177,7 @@ async def measure_main_page_load_time(url: str, output_file: str, cursor=None):
         status_code = response.status if response else 0
         screenshot = f'{ADDRESS}{output_file.split('_')[0]}/{png_file}'
         if 'eapteka' in output_file:
-            send_bot_message(url, status_code, avg_time, page_name, screenshot)
+            send_bot_message(url, status_code, avg_time, screenshot)
 
         if TABLE_NAME in tables_list:
             logging.info('Таблица %s найдена в базе', TABLE_NAME)
